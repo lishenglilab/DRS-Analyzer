@@ -40,6 +40,9 @@ Requirements
 `samtools`
 `fragpipe`(optional)<br>
 
+Users can also complete the environment configuration by pulling the docker image<br>
+`docker pull yvzeng/drs-analyzer-env:latest`<br>
+
 Installation
 -
 `git clone https://github.com/lishenglilab/mETP.git`<br>
