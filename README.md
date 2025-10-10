@@ -2,7 +2,7 @@ Nanopore Direct RNA Sequencing (DRS) Analysis Pipeline
 =
 Overview
 -
-This Nextflow pipeline provides a comprehensive analysis solution for Nanopore Direct RNA Sequencing (DRS) data. The workflow performs end-to-end processing including quality control, transcript assembly, quantification, modification detection, alternative splicing analysis, and optional proteomics integration, and this pipeline is executed in the Linux system..
+This Nextflow pipeline provides a comprehensive analysis solution for Nanopore Direct RNA Sequencing (DRS) data. The workflow performs end-to-end processing including quality control, transcript assembly, quantification, modification detection, alternative splicing analysis, and optional proteomics integration, and this pipeline is executed in the Linux system.
 
 Requirements
 -
