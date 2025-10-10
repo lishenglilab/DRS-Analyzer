@@ -13,10 +13,10 @@ Requirements
 `os`
 `argparse`
 `datetime`
-`pyfastx`
-`pysam`
+`pyfastx==0.8.4`
+`pysam==0.22.0`
 `re`
-`pandas`<br>
+`pandas==1.1.5`<br>
 *R:<br>
 `getopt`
 `tidyverse`
@@ -30,23 +30,23 @@ Requirements
 `stringr`
 `rtracklayer`<br>
 *other tools:<br>
-`tombo`
+`tombo==1.5.1`
 `NanoPsu`
-`flair`
-`blast`
-`gffread`
-`suppa2`
-`porechop`
-`samtools`
-`fragpipe`(optional)<br>
+`flair==v2.0.0`
+`blast==2.17.0+`
+`gffread==v0.11.8`
+`suppa2==v2.4`
+`porechop==0.2.4`
+`samtools==1.20`
+`fragpipe==v22.0`(optional)<br>
 
 Users can also complete the environment configuration by pulling the docker image<br>
 `docker pull yvzeng/drs-analyzer-env:latest`<br>
 
 Installation
 -
-`git clone https://github.com/lishenglilab/mETP.git`<br>
-`cd mETP`
+`git clone https://github.com/lishenglilab/DRS-Analyzer.git`<br>
+`cd DRS-Analyzer`
 
 Input Requirements
 -
