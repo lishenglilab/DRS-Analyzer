@@ -291,10 +291,11 @@ workflow full_pipeline {
     
     // Step 4: Quality report
     bam_ch = flair_pip_module.out.bam_files
-        .flatMap { dir -> 
-            fileTree(dir: dir, glob: "**/*.bam").collect { 
-                def sample = it.getBaseName()
-                tuple(sample, it)
+        .flatMap { align_dir -> 
+            def pattern = "${align_dir}/**/*.bam"
+            file(pattern).collect { bam_file -> 
+              def sample = bam_file.getSimpleName()
+              tuple(sample, bam_file)
             }
         }
     quality_report_module(bam_ch, clean_fq_ch)
