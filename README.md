@@ -21,9 +21,6 @@ DRS-Analyzer integrates multiple analysis modules for complete DRS data processi
 - [Module Usage](#module-usage)
 - [Output Description](#output-description)
 - [Test Data](#test-data)
-- [Troubleshooting](#troubleshooting)
-- [Citation](#citation)
-- [License](#license)
 
 ---
 
@@ -490,17 +487,9 @@ If tests pass, your installation is correct and you can proceed with analyzing y
 For production analysis with complete datasets:
 
 1. Prepare your full manifest file with all samples
-2. Ensure you have adequate computational resources (see [Performance Tips](#performance-tips))
+2. Ensure you have adequate computational resources
 3. Run the full pipeline or individual modules as needed
 
-
-## Version History
-
-- v1.0.0 (2026-01-27): Initial release
-  - Complete pipeline implementation
-  - All seven modules functional
-  - Docker image available
-  - Test dataset provided
 
 ---
 
