@@ -135,15 +135,11 @@ RUN conda install -n drs-analyzer -y -c bioconda -c conda-forge \
     porechop=0.2.4 \
     flair \
     seqkit \
+    suppa=2.3 \
     && conda clean -a -y
 
 # ============================================================================
-# STEP 11: Install SUPPA2
-# ============================================================================
-RUN conda run -n drs-analyzer pip install --no-cache-dir SUPPA
-
-# ============================================================================
-# STEP 12: Install nanopsu (pseudouridine detection)
+# STEP 11: Install nanopsu (pseudouridine detection)
 # ============================================================================
 RUN git clone https://github.com/sihaohuanguc/Nanopore_psU.git /tmp/Nanopore_psU && \
     cd /tmp/Nanopore_psU && \
@@ -152,7 +148,7 @@ RUN git clone https://github.com/sihaohuanguc/Nanopore_psU.git /tmp/Nanopore_psU
     rm -rf /tmp/Nanopore_psU
 
 # ============================================================================
-# STEP 13: Install R in the conda environment
+# STEP 12: Install R in the conda environment
 # ============================================================================
 
 # Install additional system dependencies for R packages
@@ -171,7 +167,7 @@ RUN apt-get update && apt-get install -y \
 RUN conda install -n drs-analyzer -y -c bioconda -c conda-forge r-getopt r-tidyverse r-plyr r-ggsci r-rtsne r-hmisc r-stringr bioconductor-complexheatmap bioconductor-biostrings bioconductor-rtracklayer r-remotes
 
 # ============================================================================
-# STEP 14: Verify installations
+# STEP 13: Verify installations
 # ============================================================================
 RUN echo "=== Verifying installations ===" && \
     conda run -n drs-analyzer python --version && \
@@ -196,14 +192,14 @@ RUN echo "=== Verifying installations ===" && \
     echo "=== All installations verified ==="
 
 # ============================================================================
-# STEP 15: Set up environment variables
+# STEP 14: Set up environment variables
 # ============================================================================
 ENV PATH=/opt/conda/envs/drs-analyzer/bin:/opt/conda/bin:/usr/local/bin:$PATH
 ENV CONDA_DEFAULT_ENV=drs-analyzer
 ENV CONDA_PREFIX=/opt/conda/envs/drs-analyzer
 
 # ============================================================================
-# STEP 16: Create working directory and set permissions
+# STEP 15: Create working directory and set permissions
 # ============================================================================
 RUN mkdir -p /data /output && \
     chmod -R 777 /data /output
