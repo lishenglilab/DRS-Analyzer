@@ -52,9 +52,9 @@ process FLAIR_PIP {
     Rscript ${project_dir}/bin/transcriptFilter.R -t quant/flair_quantify.tpm.tsv -a collapse/isoforms.isoforms.gtf -q ${params.tpm_cutoff} -o .
     
     # 重命名输出文件
-    cp collapse/isoforms.isoforms.fa isoforms.fa
-    cp quant/flair_quantify.tpm.tsv quant.tpm.tsv
-    cp isoforms_filter.gtf filtered_isoforms.gtf
+    mv collapse/isoforms.isoforms.fa isoforms.fa
+    mv quant/flair_quantify.tpm.tsv quant.tpm.tsv
+    mv isoforms_filter.gtf filtered_isoforms.gtf
     """
     
     stub:

@@ -9,9 +9,9 @@ process GET_FILE_SIZE {
     
     script:
     """
-    size=\$(stat -c%s ${fastq})
-    export size_gb=\$(echo "scale=2; \$size / 1024 / 1024 / 1024" | bc)
-    echo "${sample} \$size_gb" > ${sample}_size.txt
+    size_bytes=\$(stat -L -c%s "${fastq}")
+    export size_gb=\$(echo "\$size_bytes 1073741824" | awk '{printf "%.2f", \$1/\$2}')
+    echo "${sample} \${size_gb}" > ${sample}_size.txt
     """
     
     stub:
