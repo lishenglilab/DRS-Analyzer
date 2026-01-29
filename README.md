@@ -399,7 +399,7 @@ We provide a small test dataset to help you verify the installation and test ind
 
 ### Download Test Data
 
-The test dataset is available at: **http://www.shenglilabs.com/mETP/**
+The test dataset is available at: **[Google Drive](https://drive.google.com/file/d/1i3euksFeXSlgvIRoUGFTa0binatpp7f3/view?usp=drive_link)**
 
 
 ### Test Data Structure
