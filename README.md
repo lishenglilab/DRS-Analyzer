@@ -20,6 +20,7 @@ DRS-Analyzer integrates multiple analysis modules for complete DRS data processi
 - [Input Requirements](#input-requirements)
 - [Module Usage](#module-usage)
 - [Output Description](#output-description)
+- [Run the synthetic tests](#run-the-synthetic-tests)
 - [Test Data](#test-data)
 
 ---
@@ -390,6 +391,24 @@ output/
 ├── protein_ref/                # Protein reference database
 └── protein/                    # Proteomics results (optional)
 ```
+
+---
+
+## Run the synthetic tests
+
+On Linux x86-64, create and activate the lightweight test environment with Micromamba, then run the same command used in GitHub Actions.
+
+```bash
+micromamba create --strict-channel-priority -f tests/environment.yml
+micromamba activate drs-tests
+bash tests/run.sh
+```
+
+The environment specifies Nextflow 23.10.1 with Java 11, SeqKit 2.12.0, Samtools 1.20, R with tidyverse and data.table, and Python with Biopython. The test driver prints an output directory under `TMPDIR` (or the system temporary directory) with `versions.log`, `results.log`, command logs and results for each test. Each run starts with fresh work directories. CI sets a 20-minute limit for dependency installation and testing, and saves logs on test failure.
+
+The tiny examples in `tests/data/` are synthetic FASTQ, SAM, FASTA and WIG. The driver generates the gzip FASTQ and BAM, verifies SeqKit lengths and Samtools alignment counts, checks the R and Python reports against fixed values, and runs the `quality_report` command on both flat and nested BAM directories. Coverage includes invalid FASTQ, unknown transcript IDs, and missing or mismatched QC inputs. The suite uses only these small examples. Adapter trimming, FLAIR, SUPPA2, full modification detection and proteomics are outside its coverage.
+
+For `--module quality_report`, use matching sample names such as `toy.bam` and `toy.clean.fastq.gz`. BAM files can be directly inside `--bam_dir` or in subdirectories. The command returns a nonzero exit when a BAM or FASTQ input set is empty or when their sample IDs differ. It writes a tab-separated report to `<outdir>/table/QC.xls`. An optional `<qc_dir>/read_number_fail.txt` contains sample IDs and failed FASTQ line counts. Omit it or leave it empty for the all-pass case.
 
 ---
 

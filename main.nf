@@ -383,23 +383,29 @@ workflow {
             error "ERROR: --bam_dir and --clean_fastq_dir are required for quality_report module"
         }
         
-        // Create BAM channel with better sample name extraction
-        bam_ch = Channel.fromPath("${params.bam_dir}/**/*.bam")
-            .map { file -> 
-                // getSimpleName() removes all extensions (e.g., "F1-1.bam" -> "F1-1")
-                def sample = file.getSimpleName()
-                tuple(sample, file) 
-            }
-            .view { sample, file -> "BAM Channel: sample=${sample}, file=${file.getName()}" }
-        
-        // Create clean fastq channel
-        clean_fq_ch = Channel.fromPath("${params.clean_fastq_dir}/*.fastq.gz")
-            .map { file -> 
-                def name = file.getName()
-                def sample = name.replaceAll(/\.clean\.fastq\.gz$/, '')
-                tuple(sample, file) 
-            }
-            .view { sample, file -> "FASTQ Channel: sample=${sample}, file=${file.getName()}" }
+        // Nextflow 23.10 does not match flat BAMs with the recursive glob.
+        def bam_files = (files("${params.bam_dir}/*.bam", type: 'file') +
+                         files("${params.bam_dir}/**/*.bam", type: 'file')).unique()
+        def clean_fastqs = files("${params.clean_fastq_dir}/*.fastq.gz", type: 'file')
+        if (!bam_files) {
+            error "ERROR: No BAM files found in --bam_dir (${params.bam_dir})"
+        }
+        if (!clean_fastqs) {
+            error "ERROR: No FASTQ files found in --clean_fastq_dir (${params.clean_fastq_dir})"
+        }
+
+        def bam_samples = bam_files.collect { bam -> tuple(bam.getSimpleName(), bam) }
+        def fastq_samples = clean_fastqs.collect { fq ->
+            tuple(fq.getName().replaceAll(/\.clean\.fastq\.gz$/, ''), fq)
+        }
+        def bam_ids = bam_samples.collect { it[0] }.toSet()
+        def fastq_ids = fastq_samples.collect { it[0] }.toSet()
+        if (bam_ids != fastq_ids) {
+            error "ERROR: BAM and FASTQ sample IDs do not match. BAM only: ${(bam_ids - fastq_ids).sort()}; FASTQ only: ${(fastq_ids - bam_ids).sort()}"
+        }
+
+        bam_ch = Channel.fromList(bam_samples)
+        clean_fq_ch = Channel.fromList(fastq_samples)
         
         quality_report_module(bam_ch, clean_fq_ch)
         

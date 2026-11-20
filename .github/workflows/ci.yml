@@ -1,0 +1,46 @@
+name: Synthetic QC and helper tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install test dependencies
+        env:
+          MAMBA_ROOT_PREFIX: ${{ runner.temp }}/drs-ci-mamba
+        run: |
+          mkdir -p "$RUNNER_TEMP/drs-ci-results" "$RUNNER_TEMP/drs-ci-tools"
+          curl --proto '=https' --fail --location --silent --show-error --retry 3 \
+            https://conda.anaconda.org/conda-forge/linux-64/micromamba-2.3.2-0.tar.bz2 \
+            -o "$RUNNER_TEMP/drs-ci-tools/micromamba.tar.bz2"
+          cd "$RUNNER_TEMP/drs-ci-tools"
+          echo '5512233cdd8564a671626081026dc861537a963baa06706baab08fac6f3bb9d2  micromamba.tar.bz2' | sha256sum --check
+          tar -xjf micromamba.tar.bz2 bin/micromamba
+          bin/micromamba --no-rc create --yes --strict-channel-priority \
+            --prefix "$RUNNER_TEMP/drs-ci-env" --file "$GITHUB_WORKSPACE/tests/environment.yml"
+
+      - name: Run functional and integration tests
+        env:
+          MAMBA_ROOT_PREFIX: ${{ runner.temp }}/drs-ci-mamba
+          TMPDIR: ${{ runner.temp }}/drs-ci-results
+        run: |
+          "$RUNNER_TEMP/drs-ci-tools/bin/micromamba" --no-rc run \
+            --prefix "$RUNNER_TEMP/drs-ci-env" bash tests/run.sh
+
+      - name: Save test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: drs-test-logs
+          path: ${{ runner.temp }}/drs-ci-results/**/*.log
+          if-no-files-found: ignore
+          retention-days: 7
