@@ -17,8 +17,13 @@ params.proteomics_manifest = null
 params.proteom_workflow = null
 params.philosopher_path = "/path/to/MSPipe/philosopher/philosopher"
 params.fragpipe_path = "/path/to/MSPipe/fragpipe/bin/fragpipe"
-params.msfragger_jar = "/path/to/MSPipe/MSFragger-3.8/MSFragger-3.8.jar"
-params.ionquant_jar = "/path/to/MSPipe/IonQuant-1.9.8/IonQuant-1.9.8.jar"
+params.msfragger_jar = null
+params.ionquant_jar = null
+params.fragpipe_cli = 'legacy'
+params.fragpipe_tools_dir = null
+params.fragpipe_python = null
+params.fragpipe_dry_run = false
+params.fragpipe_ram_gb = null
 
 // Module selection parameter
 params.module = null  // Options: reads_chop, flair_pip, quality_report, reference_generate, modification, proteomics, suppa2, or null for full pipeline
@@ -203,32 +208,153 @@ workflow modification_module {
     psu = MODIFICATION_DETECTION.out.psu_results
 }
 
+def proteomicsInput(value, option, executable = false) {
+    if (!value) {
+        error "ERROR: ${option} is required for proteomics module"
+    }
+    def path = file(value, glob: false).toAbsolutePath().normalize()
+    if (!java.nio.file.Files.isRegularFile(path) || !java.nio.file.Files.isReadable(path)) {
+        error "ERROR: ${option} must point to a readable regular file (${path})"
+    }
+    if (executable && !java.nio.file.Files.isExecutable(path)) {
+        error "ERROR: ${option} must point to an executable file (${path})"
+    }
+    path
+}
+
+def proteomicsManifest(manifest) {
+    def spectra = []
+    def fields = []
+    manifest.eachLine('UTF-8') { line, number ->
+        if (line.trim()) {
+            def columns = line.split('\t', -1)
+            if (columns.length != 4 || line.contains('\u0000')) {
+                error "ERROR: proteomics manifest line ${number} must contain four tab-separated columns"
+            }
+            if (!columns[0].trim()) {
+                error "ERROR: proteomics manifest line ${number} mzML path is required"
+            }
+            if (columns[3] != 'DDA') {
+                error "ERROR: proteomics manifest line ${number} must have acquisition type DDA"
+            }
+            def spectrum = manifest.parent.resolve(columns[0]).normalize()
+            if (!spectrum.fileName.toString().toLowerCase(java.util.Locale.ROOT).endsWith('.mzml') ||
+                !java.nio.file.Files.isRegularFile(spectrum) || !java.nio.file.Files.isReadable(spectrum) ||
+                spectrum.toString().find(/[\t\r\n]/)) {
+                error "ERROR: proteomics manifest line ${number} must reference a readable mzML file"
+            }
+            if (spectrum in spectra) {
+                error "ERROR: proteomics manifest line ${number} repeats an mzML path"
+            }
+            spectra << spectrum
+            fields << columns[1..3].toList()
+        }
+    }
+    if (!spectra) {
+        error "ERROR: proteomics manifest must contain at least one DDA mzML row"
+    }
+    [spectra, fields]
+}
+
+def fragpipeRamOverride() {
+    def configured = params.fragpipe_ram_gb
+    if (configured == null) {
+        return null
+    }
+
+    // Nextflow retains only the last value of a repeated pipeline option.
+    // Use the real argument boundaries, including for values with embedded quotes.
+    def option = '--fragpipe_ram_gb'
+    def argv = ProcessHandle.current().info().arguments().orElse(null)
+    def cmdline = java.nio.file.Path.of('/proc/self/cmdline')
+    if (!argv && java.nio.file.Files.isReadable(cmdline)) {
+        argv = new String(java.nio.file.Files.readAllBytes(cmdline), 'UTF-8').split('\u0000')
+    }
+    if (!argv && workflow.commandLine?.contains(option)) {
+        error 'ERROR: Cannot verify --fragpipe_ram_gb CLI arguments on this host; set FRAGPIPE task memory in a Nextflow config instead'
+    }
+    if (argv?.count { it == option || it.startsWith(option + '=') } > 1) {
+        error 'ERROR: --fragpipe_ram_gb may be specified only once'
+    }
+
+    def value = configured.toString()
+    if (!(value ==~ /[1-9][0-9]*/) || !value.isInteger()) {
+        error 'ERROR: --fragpipe_ram_gb must be a positive integer in GiB'
+    }
+    return value.toInteger()
+}
+
+
+def fragpipeRuntime(launcher, philosopher) {
+    def cli = params.fragpipe_cli.toString()
+    if (!(cli in ['legacy', '23.1'])) {
+        error 'ERROR: --fragpipe_cli must be legacy or 23.1'
+    }
+    def dryRun = params.fragpipe_dry_run
+    if (!(dryRun instanceof Boolean)) {
+        error 'ERROR: --fragpipe_dry_run must be true or false'
+    }
+    def expectedJar = cli == '23.1' ? 'fragpipe-23.1.jar' : 'fragpipe-20.0.jar'
+    def lib = launcher.toRealPath().parent.resolve('../lib').normalize().toFile()
+    def packaged = lib.listFiles()?.findAll { it.isFile() && it.name ==~ /fragpipe-\d[^\/]*\.jar/ }
+    if (packaged && packaged*.name != [expectedJar]) {
+        error "ERROR: --fragpipe_cli ${cli} does not match the FragPipe launcher package (${packaged*.name.sort().join(', ')})"
+    }
+
+    def executable = [launcher.toString()]
+    if (cli == 'legacy') {
+        if (params.fragpipe_ram_gb != null) {
+            error 'ERROR: --fragpipe_ram_gb requires --fragpipe_cli 23.1'
+        }
+        if (params.fragpipe_tools_dir || params.fragpipe_python || dryRun) {
+            error 'ERROR: --fragpipe_tools_dir, --fragpipe_python and --fragpipe_dry_run require --fragpipe_cli 23.1'
+        }
+        def msfragger = proteomicsInput(params.msfragger_jar, '--msfragger_jar').toString()
+        def ionquant = proteomicsInput(params.ionquant_jar, '--ionquant_jar').toString()
+        return [cli: cli, launcher: launcher.toString(), executable: executable + philosopher, readable: [msfragger, ionquant],
+                args: ['--config-msfragger', msfragger, '--config-ionquant', ionquant, '--config-philosopher', philosopher],
+                dryRun: false]
+    }
+    def ramGb = fragpipeRamOverride()
+    if (params.msfragger_jar || params.ionquant_jar) {
+        error 'ERROR: FragPipe 23.1 uses --fragpipe_tools_dir. Remove --msfragger_jar and --ionquant_jar'
+    }
+    if (!params.fragpipe_tools_dir) {
+        error 'ERROR: --fragpipe_tools_dir is required for FragPipe 23.1'
+    }
+    def tools = file(params.fragpipe_tools_dir, glob: false).toAbsolutePath().normalize()
+    if (!java.nio.file.Files.isDirectory(tools) || !java.nio.file.Files.isReadable(tools) ||
+        !java.nio.file.Files.isExecutable(tools)) {
+        error "ERROR: --fragpipe_tools_dir must point to a readable directory (${tools})"
+    }
+
+    // The supported 23.1 bundle matches the pinned engines and native library used in the dry-run.
+    def members = ['MSFragger-4.3.jar', 'IonQuant-1.11.11.jar', 'diaTracer-1.3.3.jar',
+                   'ext/bruker/libtimsdata-2-21-0-4.so'].collect { name ->
+        proteomicsInput(tools.resolve(name), "--fragpipe_tools_dir member ${name}").toString()
+    }
+    def python = proteomicsInput(params.fragpipe_python, '--fragpipe_python', true).toString()
+    def args = ['--config-tools-folder', tools.toString(), '--config-python', python]
+    [cli: cli, launcher: launcher.toString(), executable: executable + python, readable: members,
+     args: args, dryRun: dryRun, ramGb: ramGb]
+}
+
+
 workflow proteomics_module {
     take:
     protein_ref
-    
+
     main:
-    if (!params.proteomics_manifest) {
-        error "ERROR: --proteomics_manifest is required for proteomics module"
-    }
-    
-    // Create output directories
-    file("${params.outdir}/protein_ref").mkdirs()
-    file("${params.outdir}/protein").mkdirs()
-    
-    ADD_DECOY(protein_ref)
-    
-    FRAGPIPE(
-        ADD_DECOY.out.decoy_db,
-        file(params.proteomics_manifest),
-        params.proteom_workflow,
-        params.philosopher_path,
-        params.fragpipe_path,
-        params.msfragger_jar,
-        params.ionquant_jar
-    )
-    
-    // Outputs are already published by the FRAGPIPE process
+    def manifest = proteomicsInput(params.proteomics_manifest, '--proteomics_manifest')
+    def workflowConfig = proteomicsInput(params.proteom_workflow, '--proteom_workflow')
+    def philosopher = proteomicsInput(params.philosopher_path, '--philosopher_path', true).toString()
+    def fragpipe = proteomicsInput(params.fragpipe_path, '--fragpipe_path', true)
+    def runtime = fragpipeRuntime(fragpipe, philosopher)
+    def (spectra, manifestFields) = proteomicsManifest(manifest)
+
+    ADD_DECOY(protein_ref, philosopher)
+    FRAGPIPE(ADD_DECOY.out.decoy_db, workflowConfig, spectra, manifestFields, runtime)
+
     emit:
     fragpipe_output = FRAGPIPE.out.fragpipe_output
 }
@@ -468,17 +594,14 @@ workflow {
         ========================================
         Running MODULE: proteomics
         ========================================
-        Required: --protein_ref, --proteomics_manifest
+        Required: --protein_ref, --proteomics_manifest, --proteom_workflow
         Output: FragPipe results
         ========================================
         """
         
-        if (!params.protein_ref) {
-            error "ERROR: --protein_ref is required for proteomics module"
-        }
-        
-        proteomics_module(Channel.fromPath(params.protein_ref))
-        
+        def proteinRef = proteomicsInput(params.protein_ref, '--protein_ref')
+        proteomics_module(proteinRef)
+
         // Log output
         proteomics_module.out.fragpipe_output.view { "FragPipe results: ${it}" }
         

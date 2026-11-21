@@ -1,4 +1,4 @@
-name: Synthetic QC and helper tests
+name: Synthetic QC and FragPipe mock tests
 
 on: [push, pull_request]
 
@@ -28,10 +28,12 @@ jobs:
           bin/micromamba --no-rc create --yes --strict-channel-priority \
             --prefix "$RUNNER_TEMP/drs-ci-env" --file "$GITHUB_WORKSPACE/tests/environment.yml"
 
-      - name: Run functional and integration tests
+      - name: Run synthetic QC and FragPipe interface tests
         env:
           MAMBA_ROOT_PREFIX: ${{ runner.temp }}/drs-ci-mamba
           TMPDIR: ${{ runner.temp }}/drs-ci-results
+          NXF_OFFLINE: 'true'
+          NXF_DISABLE_CHECK_LATEST: 'true'
         run: |
           "$RUNNER_TEMP/drs-ci-tools/bin/micromamba" --no-rc run \
             --prefix "$RUNNER_TEMP/drs-ci-env" bash tests/run.sh

@@ -84,9 +84,9 @@ def build_fixtures(directory):
     return fastq, bam
 
 
-def nextflow(case, script, *args):
+def nextflow(case, script, *args, config=TESTS / "ci.config"):
     return invoke(case, [
-        "nextflow", "-C", TESTS / "ci.config", "-log", case / "nextflow.log",
+        "nextflow", "-C", config, "-log", case / "nextflow.log",
         "run", script, "-ansi-log", "false", "-w", case / "work",
         "--outdir", case / "out", "--qc_dir", case / "qc", *args,
     ])
