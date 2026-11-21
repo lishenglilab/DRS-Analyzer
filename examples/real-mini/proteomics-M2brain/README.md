@@ -6,7 +6,7 @@ target-only FASTA. DRS-Analyzer builds the decoys from that FASTA with
 Philosopher. See [data provenance](DATA_PROVENANCE.md) for UniProt
 attribution and the reference selection.
 
-The data are included in this review branch. Run from the repository root.
+The data are included in this repository. Run from the repository root.
 The format checker uses the Python 3 standard library.
 
 ```bash

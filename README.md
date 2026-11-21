@@ -500,7 +500,7 @@ The eight small fixtures in [tests/data/](tests/data/) are synthetic.
 GitHub Actions runs 68 synthetic QC and mock helper/interface tests using
 `bash tests/run.sh`.
 
-Two real-data examples are available on this review branch. The
+Two real-data examples are available under `examples/real-mini/`. The
 [Real-mini guide](examples/real-mini/) records their scope and file checks.
 
 - **ONT F1-1** is one mouse direct-RNA sample. The paired FASTQ and FAST5

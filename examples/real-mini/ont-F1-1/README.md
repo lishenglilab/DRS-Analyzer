@@ -5,7 +5,7 @@ sets. A second FASTQ has 1,500 different reads from the same sample and is
 for FASTQ parsing and read-length summaries. Use the 12-read FASTQ in the
 paired manifest.
 
-The files are included in this review branch. Run these commands
+The files are included in this repository. Run these commands
 from the repository root. Python 3 with h5py is required for the checker.
 
 ```bash

@@ -1,6 +1,6 @@
 # Real-mini examples
 
-These examples are available on this review branch under the linked data terms.
+These examples are available under the linked data terms.
 The repository's eight synthetic fixtures remain in `tests/data/`, and
 GitHub Actions has run 68 synthetic and mock tests using those inputs.
 
