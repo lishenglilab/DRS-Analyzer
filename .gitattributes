@@ -1,0 +1,5 @@
+# Preserve the approved real-data bytes across platform checkouts.
+examples/real-mini/ont-F1-1/*.fastq.gz binary
+examples/real-mini/ont-F1-1/fast5/*.fast5 binary
+examples/real-mini/proteomics-M2brain/M2brain-DDA-mini.mzML binary
+examples/real-mini/proteomics-M2brain/mini_target_only.fasta -text

@@ -496,96 +496,33 @@ For `--module quality_report`, use matching sample names such as `toy.bam` and `
 
 ## Test Data
 
-We provide a small test dataset to help you verify the installation and test individual modules. 
+The eight small fixtures in [tests/data/](tests/data/) are synthetic.
+GitHub Actions runs 68 synthetic QC and mock helper/interface tests using
+`bash tests/run.sh`.
 
-### Download Test Data
+Two real-data examples are available on this review branch. The
+[Real-mini guide](examples/real-mini/) records their scope and file checks.
 
-The test dataset is available at: **[Google Drive](https://drive.google.com/file/d/1i3euksFeXSlgvIRoUGFTa0binatpp7f3/view?usp=drive_link)**
+- **ONT F1-1** is one mouse direct-RNA sample. The paired FASTQ and FAST5
+  contain the same 12 reads. A separate 1,500-read QC FASTQ from that sample
+  is for FASTQ parsing and read-length summaries and shares zero read IDs
+  with the paired set.
+- **M2brain DDA** is a separate mass-spectrometry acquisition. The example
+  combines one indexed mzML slice (52 MS1 and 1,144 MS2 spectra) with
+  57 full-length reviewed mouse Swiss-Prot targets. The curated release
+  candidate passed format and configuration validation. A historical
+  private server search used the original mzML and original FASTA, with a
+  separate functional audit.
 
+The historical Google Drive archive used three copies of a FAST5 file.
+Only F1-1 had read IDs in common with its FASTQ in the audited archive.
+Use the Real-mini guide for the verified file pairing and defined checks.
 
-### Test Data Structure
-
-```
-DRS-Analyzer-testdata/
-├── fast5/                      # FAST5 files for modification detection
-│   ├── F1-1/
-│   │   └── PAJ07356_pass_546ffc41_0.fast5
-│   ├── F1-2/
-│   │   └── PAJ07356_pass_546ffc41_0.fast5
-│   └── F1-3/
-│       └── PAJ07356_pass_546ffc41_0.fast5
-├── fq/                         # Clean FASTQ files
-│   ├── F1-1.clean.fastq.gz
-│   ├── F1-2.clean.fastq.gz
-│   └── F1-3.clean.fastq.gz
-└── protein/                    # Proteomics test data
-    ├── LFQ-MBR.workflow       # FragPipe workflow configuration
-    ├── M2brain.mzML           # Mass spectrometry data
-    └── manifest.fp-manifest   # FragPipe manifest file
-```
-
-### Important Notes
-
-⚠️ **The test dataset is intentionally small and is designed for testing individual modules only.**
-
-- **Dataset size**: Minimal FAST5/FASTQ files (1 file per sample)
-- **Purpose**: Installation verification and module testing
-- **Limitation**: NOT suitable for running the full pipeline
-- **Recommendation**: Use your own complete dataset for actual analysis
-
-### Testing Individual Modules
-
-#### Example 1: Test Quality Report Module
-
-```bash
-# Assuming you have BAM files from FLAIR pipeline
-nextflow run main.nf \
-  --module quality_report \
-  --bam_dir /path/to/testdata/bam_files/ \
-  --clean_fastq_dir /path/to/testdata/fq/ \
-  --outdir ./test_output/
-```
-
-#### Example 2: Test Modification Detection Module
-
-First, create a test manifest file (`test_manifest.txt`):
-```
-F1-1    control    batch1    /path/to/testdata/fq/F1-1.clean.fastq.gz    /path/to/testdata/fast5/F1-1/
-F1-2    control    batch1    /path/to/testdata/fq/F1-2.clean.fastq.gz    /path/to/testdata/fast5/F1-2/
-F1-3    treated    batch1    /path/to/testdata/fq/F1-3.clean.fastq.gz    /path/to/testdata/fast5/F1-3/
-```
-
-Then run:
-```bash
-nextflow run main.nf \
-  --module modification \
-  --manifest test_manifest.txt \
-  --isoforms_fa /path/to/isoforms.fa \
-  --outdir ./test_output/
-```
-
-#### Example 3: Plan a Single-run Proteomics Job
-
-Use the 23.1 dry-run command above with one readable DDA mzML and a small
-target-only reference. Adjust the manifest relative to your installation.
-
-### Expected Results
-
-After running the test, you should see:
-- ✅ Nextflow pipeline completes without errors
-- ✅ Output files are generated in the specified output directory
-- ✅ Log files show successful completion
-
-If tests pass, your installation is correct and you can proceed with analyzing your own data.
-
-### Using Your Own Data
-
-For production analysis with complete datasets:
-
-1. Prepare your full manifest file with all samples
-2. Ensure you have adequate computational resources
-3. Run the full pipeline or individual modules as needed
-
+These examples are separate acquisitions. The ONT checks cover file
+structure and read pairing. The DDA example documents a single-run
+configuration and MS1 quantification context. Full modification analysis,
+FLAIR, SUPPA2, cross-sample MaxLFQ/MBR and real database searching are
+outside the GitHub Actions test suite.
 
 ---
 

@@ -1,0 +1,29 @@
+Real-mini laboratory data license
+
+The four laboratory data files listed below are distributed under the
+Creative Commons Attribution 4.0 International license (CC BY 4.0).
+Give attribution to Shengli Lab / mouseDRS project, link to this license,
+and indicate any changes.
+
+ont-F1-1/F1-1-paired-mini.fastq.gz
+ont-F1-1/fast5/F1-1-paired-mini.fast5
+ont-F1-1/F1-1-QC-mini.fastq.gz
+proteomics-M2brain/M2brain-DDA-mini.mzML
+
+The named attribution reflects the authors' approved credit wording.
+The authors have confirmed the laboratory's authority to release these
+mouse data and accepted the documented residual source association risk.
+
+The separate proteomics-M2brain/mini_target_only.fasta contains 57
+UniProtKB/Swiss-Prot records from the UniProt Consortium (SIB, EMBL-EBI,
+PIR). Copyrightable UniProt database content is available under CC BY 4.0.
+Credit the UniProt Consortium and retain the source, license, and changes
+described in proteomics-M2brain/DATA_PROVENANCE.md.
+
+The repository's MIT license applies to software. For the applicable
+terms, see the full CC BY 4.0 legal code and the source attribution.
+
+CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Legal code https://creativecommons.org/licenses/by/4.0/legalcode
+UniProt source https://www.uniprot.org/
+UniProt terms https://www.uniprot.org/api-documentation/support-data

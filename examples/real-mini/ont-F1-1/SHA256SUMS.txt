@@ -1,0 +1,3 @@
+26763b6060b1574726e4552b18f556cc03a0261ddf954cb6bd38e17ca9aacfc0  F1-1-paired-mini.fastq.gz
+8a720e0ecef7ed68fd2d45e529b53a5edae5d3621feeab9dc1326b1199dedbdb  F1-1-QC-mini.fastq.gz
+dcf512f0a010af481a50485aaf07485621d415adef252dc0e5230b1e56f73609  fast5/F1-1-paired-mini.fast5
