@@ -1,0 +1,5 @@
+@HD	VN:1.6	SO:unsorted
+@SQ	SN:toy_ref	LN:20
+read_a	0	toy_ref	1	60	4M	*	0	0	ACGT	IIII
+read_b	0	toy_ref	5	60	6M	*	0	0	ACGTAC	IIIIII
+read_c	4	*	0	0	*	*	0	0	ACGTACGTACG	IIIIIIIIIII

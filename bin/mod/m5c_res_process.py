@@ -21,12 +21,13 @@ def modify_dampened_fraction(plus_file,minus_file,tr_fa,out_file):
             if line.startswith('variableStep chrom='):
                 if current_tr is not None:
                     transcript_site[current_tr] = current_site
-                current_tr = line.strip().split(' ')[1].split('chrom=')[1] + '_F' 
+                current_id = line.strip().split(' ')[1].split('chrom=')[1]
+                current_tr = current_id + '_F'
                 current_site = []
             elif line.split():
                 position, fraction = line.split()
                 position = int(position)
-                base = transcript_seq[current_tr.strip('_F')][position-1]
+                base = transcript_seq[current_id][position-1]
                 current_site.append((position, base,fraction))
     if current_tr is not None:
         transcript_site[current_tr] = current_site
@@ -40,12 +41,13 @@ def modify_dampened_fraction(plus_file,minus_file,tr_fa,out_file):
             if line.startswith('variableStep'):
                 if current_tr is not None:
                     transcript_site[current_tr] = current_site
-                current_tr = line.strip().split(' ')[1].split('chrom=')[1] + '_R' 
+                current_id = line.strip().split(' ')[1].split('chrom=')[1]
+                current_tr = current_id + '_R'
                 current_site = []
             elif line.split():
                 position, fraction = line.split()
                 position = int(position)
-                base = transcript_seq[current_tr.strip('_R')][position-1]
+                base = transcript_seq[current_id][position-1]
                 current_site.append((position, base,fraction))
     if current_tr is not None:
         transcript_site[current_tr] = current_site

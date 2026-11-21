@@ -1,0 +1,12 @@
+@read_a description
+ACGT
++
+IIII
+@read_b
+ACGTAC
++
+IIIIII
+@read_c
+ACGTACGTACG
++
+IIIIIIIIIII

@@ -1,0 +1,4 @@
+track type=wiggle_0
+variableStep chrom=toy
+2 0.25
+6 0.75

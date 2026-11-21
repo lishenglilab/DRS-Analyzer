@@ -35,7 +35,7 @@ process COMBINE_QC_STATS {
     path(length_files)
     path(mapping_files)
     path(size_files)
-    path(fail_reads_file)
+    path(fail_reads_file, stageAs: 'failed_reads_input.txt')
     
     output:
     path("QC.xls")
@@ -54,7 +54,7 @@ process COMBINE_QC_STATS {
     
     # Handle fail reads file
     if [ -f "${fail_reads_file}" ] && [ -s "${fail_reads_file}" ]; then
-        cp ${fail_reads_file} read_number_fail.txt
+        cp "${fail_reads_file}" read_number_fail.txt
     else
         touch read_number_fail.txt
     fi
